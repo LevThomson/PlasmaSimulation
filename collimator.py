@@ -35,6 +35,10 @@ debye_length = 0.1 # TODO dummy values for now - define as a field eventually
 size_min = 0.001 # TODO dummy values for now - define as a field eventually
 size_max = debye_length
 
+# File variables:
+
+meshname = "collimator.msh" # Mesh will be saved to this file
+
 # FUNCTIONS --------------------
 
 def add_magnet_pair(model:gmsh.model, x:float, y:float, z:float, dx:float, dy:float, dz:float, angle:float, last_tag:int, magnet_list:list)->gmsh.model:
@@ -78,10 +82,6 @@ def add_magnet_pair(model:gmsh.model, x:float, y:float, z:float, dx:float, dy:fl
 
     gmsh.model.occ.remove([(3, mag_1_vol)], recursive=False) # Then remove the volumes leaving the bounding surfaces intact
     gmsh.model.occ.remove([(3, mag_2_vol)], recursive=False)
-
-    #collimator_surf = model.getBoundary([(3, mag_1_vol)], combined=False, oriented=False)
-
-    # UP TO HERE trying to remove the magnet surface that touches the collimator
 
     gmsh.model.occ.synchronize()
 
@@ -177,7 +177,7 @@ gmsh.option.setNumber("Mesh.Algorithm3D", 4) # HXT - works better with multithre
 
 gmsh.model.mesh.generate(3)
 
-gmsh.write("collimator.msh")
+gmsh.write(meshname)
 
 if run_gui:
     gmsh.fltk.run()
