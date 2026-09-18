@@ -2,6 +2,7 @@ demo/*
 meshes/*
 
 .vscode/
+__pycache__/
 
 test*
 note*
