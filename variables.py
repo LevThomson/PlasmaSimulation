@@ -1,3 +1,5 @@
+import numpy as np
+
 # GMSH VARIABLES -------------------------------------------
 
 run_gui = False  # Show the mesh in GMSH GUI
@@ -60,6 +62,7 @@ meshname = "collimator.msh"  # Mesh will be saved to this file
 V_c = 0 # V, electric potential at surface of cathode
 V_a = 3000 # V, electric potential at surface of anode
 
+
 t_trig = 5e-3 # s, time at which the trigger stops firing
 def V_trig(t): # V, electric potential at surface of trigger as a function of time
     '''
@@ -79,3 +82,10 @@ n_p = 10 # Number of plasma ions in the simulation
 q_ion = 3.1 # Mean charge on a molybdenum ion (Yushkov et al, 2000)
 m_ion = 95.95 # g mol^-1 mass of molybdenum ion
 v_ion = 1.74e4 # ms^-1 ion velocity (Yushkov et al, 2000) TODO Not ND specific yet
+
+# CONSTANTS ----------------------------------------------------------------
+
+mu0 = 4 * np.pi * 1e-7
+mu_r_magnet = 1.05  # Dimensionless, for NdFeB magnet (source: https://www.advancedmagnets.com/custom-magnets/)
+
+Br = 1.2 # T, magnetic field remanence, e.g. N42 NdFeB
