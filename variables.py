@@ -39,6 +39,10 @@ l_mag = l_coll  # m, = 10cm, length of magnet
 w_mag = 2 * h_mag  # m, = 5mm, width of magnet
 
 
+l_area = l_coll + l_a # m, length of area around collimator. Must encompass the whole collimator-anode shape.
+
+r_area = r_coll + l_coll # m, radius of area around collimator. Must extend at least a magnet-length away from the collimator to allow A->0 at this boundary
+
 # Plasma variables:
 
 debye_length = 0.005

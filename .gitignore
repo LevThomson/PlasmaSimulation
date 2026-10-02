@@ -1,8 +1,10 @@
 demo/*
 meshes/*
+images/*
 
 .vscode/
 __pycache__/
 
 test*
 note*
+
