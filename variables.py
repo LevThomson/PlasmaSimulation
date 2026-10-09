@@ -1,7 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
-import pyvista
+
+try: import pyvista
+except ModuleNotFoundError:
+    pass # has conflicts with gmsh - don't need this for gmsh_collimator script
 
 # ANDERS VARIABLES / FUNCTIONS -----------------------------
 class AndersVars():
