@@ -462,7 +462,7 @@ if plotfig
     ylabel("Force (N)")
     legend("Y-component of force", "X-component of force", "Total force")
     title(fig3.Name)
-    saveas(fig3, "images/ForceComponents", "png");
+    saveas(fig3, "images/ForceComponentsUncollimated", "png");
 end
 
 disp("--------------------- Collimated results ---------------------")
@@ -485,7 +485,7 @@ if plotfig
     ylabel("Force (N)")
     legend("Y-component of force", "X-component of force", "Total force")
     title(fig4.Name)
-    saveas(fig4, "images/ForceComponents", "png");
+    saveas(fig4, "images/ForceComponentsCollimated", "png");
 
     fig5 = figure("Name", "Total Thrust vs Angle Subtended By Plasma Plume");
     plot(F_y_total, FWHM_dists)
@@ -498,3 +498,4 @@ end
 
 
 fprintf("Percentage change between uncollimated & colllimated thrust: %7.4f percent. ", 100*(F_y_total(end)-F_y_total(1))/F_y_total(1))
+fprintf("\nPercentage change between uncollimated & total thrust: %7.4f percent. ", 100*(F_total-F_y_total(1))/F_y_total(1))
