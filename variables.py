@@ -163,7 +163,7 @@ class PlasmaVars():
         self.V_a = 3000 # V, electric potential at surface of anode
         self.v_ion_cathode = 15e3 # m s^-1, initial ion velocity at the cathode
 
-        self.n_p = 100 # Number of plasma ions in the simulation (note: this value will be rounded up if it doesn't divide evenly into the trigger surface cells)
+        self.n_p = 1000 # Number of plasma ions in the simulation (note: this value will be rounded up if it doesn't divide evenly into the trigger surface cells)
         self.q_ion = 3.1 # Mean charge on a molybdenum ion (Yushkov et al, 2000)
         self.m_ion = 95.95 # g mol^-1 mass of molybdenum ion
         self.v_ion = 1.74e4 # ms^-1 ion velocity (Yushkov et al, 2000) TODO Not ND specific yet
@@ -195,28 +195,37 @@ class PlottingVars():
 
             self.glyph_size = 0.05 # arrow size scale for 3d quiverplot
 
-        def render_particles(self, fname, view, filled, outline, cloud, t):
+        def render_particles(self, fname, view, cloud, t, surfaces=None, labels=None):
             '''
-            Plotting function to render particles within a mesh, then save the plot to a png.
+            Render particles within a mesh, then save the plot to a png.
             Args:
-                - fmame: filename for png
-                - view: "view_isometric", "view_xy", "view_yz" or "view_xz". Which angle to screenshot the plot at.
-                - filled: the mesh of the filled cells
+                - fname: filename for png
+                - view: "view_isometric", "view_xy", "view_yz" or "view_xz". Camera angle for the screenshot.
+                - filled: mesh of the filled cells (e.g. the trigger)
+                - outline: outer surface of the whole mesh (the rest of the collimator)
                 - cloud: the particles
-                - outline: the mesh surrounding the filled cells (i.e., the rest of the collimator)
                 - t: time at which particles are plotted (ms)
+                - surfaces: optional dict {tag: pyvista mesh} of internal surfaces to draw
+                - labels: optional dict {tag: name} for the legend, e.g. {1: "Cathode"}
             '''
             p = pyvista.Plotter(off_screen=plotting_vars.run_gui, window_size=(1400, 1000))
-            p.add_mesh(outline, style="wireframe", color="lightgrey", opacity=0.3)
-            p.add_mesh(filled, color="lightblue", opacity=0.15, show_edges=True)
+            p.enable_depth_peeling()   # draws overlapping see-through surfaces correctly
+
+            if surfaces:
+                for n, (tag, surf) in enumerate(surfaces.items()):
+                    if labels is not None:
+                        name = labels.get(tag, f"Surface {tag}")
+                        p.add_mesh(surf, style="wireframe", color="lightgrey", opacity=0.1, label=name)
+                        p.add_legend()
+                    else:
+                        p.add_mesh(surf, style="wireframe", color="lightgrey", opacity=0.1)
+
             p.add_mesh(cloud, color="red", point_size=6, render_points_as_spheres=True)
             p.add_axes()
             getattr(p, view)()
-            p.add_title(f"Positions of plasma ions at time t = {str(t)} ms")
-            p.screenshot('images/'+fname)
+            p.add_title(f"Positions of plasma ions at time t = {t} ms")
+            p.screenshot('images/' + fname)
             p.close()
-            return
-
 # CONSTANTS ----------------------------------------------------------------
 
 class Constants():
