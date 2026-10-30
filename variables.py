@@ -6,6 +6,19 @@ try: import pyvista
 except ModuleNotFoundError:
     pass # has conflicts with gmsh - don't need this for gmsh_collimator script
 
+# CONSTANTS ----------------------------------------------------------------
+
+class Constants():
+    def __init__(self):
+        self.mu0 = 4 * np.pi * 1e-7
+        self.mu_r_magnet = 1.05  # Dimensionless, for NdFeB magnet (source: https://www.advancedmagnets.com/custom-magnets/)
+
+        self.Br = 10 # T, magnetic field remanence, e.g. N42 NdFeB # TODO should be 1.2
+
+        self.e_charge = 1.602176634e-19 # C, charge on an electron in Coulombs
+        self.amu = 1.66053906660e-27 # kg, atomic mass unit
+constants = Constants()
+
 # ANDERS VARIABLES / FUNCTIONS -----------------------------
 class AndersVars():
     def __init__(self):
@@ -133,7 +146,7 @@ class CollimatorVars():
         self.l_a = self.l_c + self.kappa  # m, = 42.5mm, length of anode
         self.l_trig = self.l_c * 3 / 2  # m, = 18.75mm, length of trigger
 
-        self.n_mag = 3  # number of pairs of magnets
+        self.n_mag = 0  # number of pairs of magnets
         self.h_mag = 0.0025  # m, = 2.5mm, height of magnet
         self.l_mag = self.l_coll  # m, = 10cm, length of magnet
         self.w_mag = 2 * self.h_mag  # m, = 5mm, width of magnet
@@ -170,6 +183,9 @@ class PlasmaVars():
 
         self.t_trig = 5e-3 # s, time at which the trigger stops firing
 
+        self.q_ion = self.q_ion * constants.e_charge # C, charge per physical ion
+        self.m_ion = self.m_ion * constants.amu # kg
+
     def V_trig(self, t): # V, electric potential at surface of trigger as a function of time
         '''
         Args:
@@ -177,7 +193,7 @@ class PlasmaVars():
         Returns:
             - electric potential at surface of trigger at time t
         '''
-        if t < 0:
+        if t < 0: 
             raise ValueError("Time must be greater than or equal to zero")
         elif t < self.t_trig: # While triggering
             return 3000
@@ -226,19 +242,9 @@ class PlottingVars():
             p.add_title(f"Positions of plasma ions at time t = {t} ms")
             p.screenshot('images/' + fname)
             p.close()
-# CONSTANTS ----------------------------------------------------------------
-
-class Constants():
-    def __init__(self):
-        self.mu0 = 4 * np.pi * 1e-7
-        self.mu_r_magnet = 1.05  # Dimensionless, for NdFeB magnet (source: https://www.advancedmagnets.com/custom-magnets/)
-
-        self.Br = 1.2 # T, magnetic field remanence, e.g. N42 NdFeB
-
 # Instantiate these classes for import into scripts
 
 anders_vars = AndersVars()
 collimator_vars = CollimatorVars()
 plasma_vars = PlasmaVars()
 plotting_vars = PlottingVars()
-constants = Constants()
