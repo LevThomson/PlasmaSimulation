@@ -13,7 +13,7 @@ class Constants():
         self.mu0 = 4 * np.pi * 1e-7
         self.mu_r_magnet = 1.05  # Dimensionless, for NdFeB magnet (source: https://www.advancedmagnets.com/custom-magnets/)
 
-        self.Br = 10 # T, magnetic field remanence, e.g. N42 NdFeB # TODO should be 1.2
+        self.Br = 1.2 # T, magnetic field remanence, e.g. N42 NdFeB
 
         self.e_charge = 1.602176634e-19 # C, charge on an electron in Coulombs
         self.amu = 1.66053906660e-27 # kg, atomic mass unit
@@ -146,7 +146,7 @@ class CollimatorVars():
         self.l_a = self.l_c + self.kappa  # m, = 42.5mm, length of anode
         self.l_trig = self.l_c * 3 / 2  # m, = 18.75mm, length of trigger
 
-        self.n_mag = 0  # number of pairs of magnets
+        self.n_mag = 3  # number of pairs of magnets
         self.h_mag = 0.0025  # m, = 2.5mm, height of magnet
         self.l_mag = self.l_coll  # m, = 10cm, length of magnet
         self.w_mag = 2 * self.h_mag  # m, = 5mm, width of magnet
@@ -176,10 +176,10 @@ class PlasmaVars():
         self.V_a = 3000 # V, electric potential at surface of anode
         self.v_ion_cathode = 15e3 # m s^-1, initial ion velocity at the cathode
 
-        self.n_p = 1000 # Number of plasma ions in the simulation (note: this value will be rounded up if it doesn't divide evenly into the trigger surface cells)
-        self.q_ion = 3.1 # Mean charge on a molybdenum ion (Yushkov et al, 2000)
-        self.m_ion = 95.95 # g mol^-1 mass of molybdenum ion
-        self.v_ion = 1.74e4 # ms^-1 ion velocity (Yushkov et al, 2000) TODO Not ND specific yet
+        self.n_p = 1000 #(3100 for electrons) # Number of plasma ions in the simulation (note: this value will be rounded up if it doesn't divide evenly into the trigger surface cells)
+        self.q_ion = 3.1 #(1 for electrons) # Mean charge on a molybdenum ion (Yushkov et al, 2000)
+        self.m_ion = 95.95  #(5.486e-4 for electrons) # g mol^-1 mass of molybdenum ion
+        self.v_ion = 1.74e4 #(8.888e5 for electrons) # ms^-1 ion velocity (Yushkov et al, 2000) TODO Not ND specific yet
 
         self.t_trig = 5e-3 # s, time at which the trigger stops firing
 

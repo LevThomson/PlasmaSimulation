@@ -3,6 +3,7 @@ Boris pusher for the collimator simulation
 """
 import numpy as np
 import dolfinx
+import matplotlib.pyplot as plt
 # ----------------------------------------------------------------------------
 # 1. Boris push (pure numpy, vectorised over particles)
 # ----------------------------------------------------------------------------
@@ -47,25 +48,94 @@ def choose_dt(B, mesh, v_max, q, m, steps_per_gyro=20, cell_fraction=0.5):
 # ----------------------------------------------------------------------------
 # 3. Standalone test: uniform B, one particle, compare with analytic orbit
 # ----------------------------------------------------------------------------
-def test_gyration(q, m, B0=1.0, v0=2e4, n_gyros=5, steps_per_gyro=50):
+# def test_gyration(q, m, B0=1.0, v0=2e4, n_gyros=5, steps_per_gyro=50):
+#     B = np.array([[0.0, 0.0, B0]])
+#     E = np.zeros((1, 3))
+#     T = 2 * np.pi * m / (q * B0)
+#     r_L = m * v0 / (q * B0)
+#     dt = T / steps_per_gyro
+#     v = np.array([[v0, 0.0, 0.0]])               # velocity at t = 0
+#     x = np.zeros((1, 3))                         # position at t = 0
+#     v = boris_push(v, B, E, q, m, -0.5 * dt)     # leapfrog stagger:ß v at t = -dt/2
+#     xs = []
+#     for _ in range(n_gyros * steps_per_gyro):
+#         v = boris_push(v, B, E, q, m, dt)
+#         x = x + v * dt
+#         xs.append(x[0].copy())
+#     xs = np.array(xs)
+#     # orbit centre for q>0, B along +z, v along +x is at (0, -r_L)
+#     radii = np.linalg.norm(xs[:, :2] - np.array([0.0, -r_L]), axis=1)
+#     print(f"|v| drift: {abs(np.linalg.norm(v) - v0) / v0:.2e} (should be small, eg ~1e-15)")
+#     print(f"Larmor radius analytic {r_L:.5g} m, simulated {radii.mean():.5g} +/- {radii.std():.2e}")
+
+def test_gyration(q, m, B0=1.0, v0=2e4, n_gyros=5, steps_per_gyro=50, plot=True):
     B = np.array([[0.0, 0.0, B0]])
     E = np.zeros((1, 3))
     T = 2 * np.pi * m / (q * B0)
     r_L = m * v0 / (q * B0)
     dt = T / steps_per_gyro
-    v = np.array([[v0, 0.0, 0.0]])               # velocity at t = 0
-    x = np.zeros((1, 3))                         # position at t = 0
-    v = boris_push(v, B, E, q, m, -0.5 * dt)     # leapfrog stagger:ß v at t = -dt/2
-    xs = []
-    for _ in range(n_gyros * steps_per_gyro):
+
+    v = np.array([[v0, 0.0, 0.0]]) # velocity at t = 0
+    x = np.zeros((1, 3)) # position at t = 0
+    v = boris_push(v, B, E, q, m, -0.5 * dt) # leapfrog stagger: v at t = -dt/2
+
+    n_steps = n_gyros * steps_per_gyro
+    xs = np.empty((n_steps, 3))
+    speeds = np.empty(n_steps + 1)
+    speeds[0] = np.linalg.norm(v) # speed after the half-step stagger
+
+    for i in range(n_steps):
         v = boris_push(v, B, E, q, m, dt)
         x = x + v * dt
-        xs.append(x[0].copy())
-    xs = np.array(xs)
+        xs[i] = x[0]
+        speeds[i + 1] = np.linalg.norm(v)
+
     # orbit centre for q>0, B along +z, v along +x is at (0, -r_L)
-    radii = np.linalg.norm(xs[:, :2] - np.array([0.0, -r_L]), axis=1)
-    print(f"|v| drift: {abs(np.linalg.norm(v) - v0) / v0:.2e} (should be small, eg ~1e-15)")
+    centre = np.array([0.0, -r_L])
+    radii = np.linalg.norm(xs[:, :2] - centre, axis=1)
+
+    KE = 0.5 * m * speeds**2
+    dKE = np.diff(KE) # energy change per step [J]
+    rel_drift = (speeds - v0) / v0 # cumulative relative |v| error
+
+    print(f"|v| drift: {abs(speeds[-1] - v0) / v0:.2e} (should be small, eg ~1e-15)")
     print(f"Larmor radius analytic {r_L:.5g} m, simulated {radii.mean():.5g} +/- {radii.std():.2e}")
+    print(f"Max |dKE| per step: {np.abs(dKE).max():.2e} J  (KE0 = {KE[0]:.3e} J)")
+
+    if plot:
+        fig, axs = plt.subplots(1, 2, figsize=(10, 4.5))
+
+        # 1) Particle path vs analytic circle
+        theta = np.linspace(0, 2 * np.pi, 400)
+        axs[0].plot(centre[0] + r_L * np.cos(theta), centre[1] + r_L * np.sin(theta),
+                    "k--", lw=1, label="Analytic Larmor orbit")
+        axs[0].plot(xs[:, 0], xs[:, 1], ".-", ms=3, lw=0.8, label="Boris pusher")
+        axs[0].plot(0, 0, "ro", label="Start")
+        axs[0].set_aspect("equal")
+        axs[0].set_xlabel("x [m]")
+        axs[0].set_ylabel("y [m]")
+        axs[0].set_title(f"Gyration in B = {B0} T ẑ")
+        axs[0].legend(fontsize=8)
+
+        # # 2) Energy change per step
+        # steps = np.arange(1, n_steps + 1)
+        # axs[1].plot(steps, dKE / KE[0], lw=0.8)
+        # axs[1].set_xlabel("Step")
+        # axs[1].set_ylabel(r"$\Delta KE / KE_0$ per step")
+        # axs[1].set_title("Energy change per step")
+        # axs[1].ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+
+        # 3) Cumulative relative speed drift
+        axs[1].plot(np.arange(n_steps + 1), rel_drift, lw=0.8)
+        axs[1].set_xlabel("Step")
+        axs[1].set_ylabel(r"$(|v| - v_0)/v_0$")
+        axs[1].set_title("Cumulative |v| drift")
+        axs[1].ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+
+        fig.tight_layout()
+        plt.savefig("images/gyration_test.png")
+
+    return xs, speeds
 
 # UP TO HERE
 # ----------------------------------------------------------------------------
