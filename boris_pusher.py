@@ -217,7 +217,7 @@ def run_simulation(mesh, ptcls, B, cell_tags, physicalgroups,
     - stagger_initial_velocity: treat the stored v as v(t=0) and step it back to
         v(-dt/2), as leapfrog/Boris expects. Set False if v is already staggered.
     """
-    assert mesh.comm.size == 1, "serial only: escape detection assumes one process owns the whole mesh"
+    assert mesh.comm.size == 1, "parallel not supported"
 
     tdim = mesh.topology.dim
     imap = mesh.topology.index_map(tdim)
@@ -612,13 +612,13 @@ def export_vtk(rec, folder):
  
  
 # ----------------------------------------------------------------------------
-# Simulate & animate - wrapper (this is what's called in boundary_conditions.ipynb)
+# Simulate & animate
 # ----------------------------------------------------------------------------
 def animate_run(mesh, ptcls, B, cell_tags, physicalgroups, n_steps, dt,
                 q_ion, m_ion, filename="particles.gif", record_every=1, 
                 save_npz=None, run_kwargs=None, region_styles=None, **render_kwargs):
     """
-    Run the Boris loop while recording, then render.
+    Runs the Boris pusher loop and then animates the particles. 
     Args:
     - run_kwargs   : extra keyword arguments for run_simulation (E=..., q=..., m=..., ...)
     - save_npz     : path to also save the raw recording (for re-rendering later)
